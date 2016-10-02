@@ -62,11 +62,11 @@
   },
   
   "Outputs" : {
-    "ECSRunTaskFunction" : {
+    "ECSRunTaskFunctionName" : {
       "Description" : "ARN of ECS Run Task Function",
-      "Value" : { "Fn::GetAtt" : ["ECSRunTaskFunction", "Arn"] },
+      "Value" : { "Ref" : "ECSRunTaskFunction" },
       "Export" : {
-        "Name" : "codepipeline-ecs-runtask-function"
+        "Name" : "codepipeline-ecs-runtask-function-name"
       }
     }
   }

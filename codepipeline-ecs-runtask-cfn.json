@@ -1,0 +1,74 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "CodePipeline ECS Run Task Lambda Function",
+  
+  "Resources" : {
+    
+    "ECSRunTaskFunction" : {
+      "Type" : "AWS::Lambda::Function",
+      "Properties" : {
+        "Description" : "Invoked by CodePipeline to run a ECS task",
+        "MemorySize" : "128",
+        "Role" : { "Fn::GetAtt" : ["LambdaRole", "Arn"] },
+        "Runtime" : "python2.7",
+        "Timeout" : "60",
+        "Handler" : "index.handler",
+        "Code" : {
+          "ZipFile" : { "Fn::Join" : ["\n", [
+            "import json",
+            "import cfnresponse",
+            
+            "def handler(event, context):",
+            "  print event"
+          ]]}
+        }
+      }
+    },
+    
+    "LambdaRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties" : {
+        "AssumeRolePolicyDocument" : {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "lambda.amazonaws.com"
+              ]
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        },
+        "Policies" : [ {
+          "PolicyName" : "ECSRunTaskPolicy",
+          "PolicyDocument" : {
+            "Version" : "2012-10-17",
+            "Statement": [
+                {
+                    "Action": [
+                        "logs:*"
+                    ],
+                    "Resource": "arn:aws:logs:*:*:*",
+                    "Effect": "Allow"
+                }
+            ]
+          }
+        }]
+      }
+    }
+    
+  },
+  
+  "Outputs" : {
+    "ECSRunTaskFunction" : {
+      "Description" : "ARN of ECS Run Task Function",
+      "Value" : { "Fn::GetAtt" : ["ECSRunTaskFunction", "Arn"] },
+      "Export" : {
+        "Name" : "codepipeline-ecs-runtask-function"
+      }
+    }
+  }
+  
+}

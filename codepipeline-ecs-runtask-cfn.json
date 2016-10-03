@@ -18,8 +18,24 @@
             "import json",
             "import cfnresponse",
             
+            "def parse_user_params(user_parameters):",
+            "  params = dict()",
+            "  for param in user_parameters.split(','):",
+            "    key = param.split('=')[0].strip()",
+            "    value = param.split('=')[1].strip()",
+            "    params[key] = value",
+            "  return params",
+            
             "def handler(event, context):",
-            "  print event"
+            "  print event",
+            
+            "  job_id = event['CodePipeline.job']['id']",
+            "  job_data = event['CodePipeline.job']['data']",
+            "  user_parameters = job_data['actionConfiguration']['configuration']['UserParameters']",
+            
+            "  params = parse_user_params(user_parameters)",
+            "  print params"
+            
           ]]}
         }
       }

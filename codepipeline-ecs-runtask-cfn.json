@@ -16,7 +16,9 @@
         "Code" : {
           "ZipFile" : { "Fn::Join" : ["\n", [
             "import json",
-            "import cfnresponse",
+            "import boto3",
+            
+            "code_pipeline = boto3.client('codepipeline')",
             
             "def parse_user_params(user_parameters):",
             "  params = dict()",
@@ -26,6 +28,16 @@
             "    params[key] = value",
             "  return params",
             
+            "def put_job_success(job):",
+            "  print('Putting job failure')",
+            "  print(message)",
+            "  code_pipeline.put_job_success_result(jobId=job)",
+            
+            "def put_job_failure(job, message):",
+            "  print('Putting job failure')",
+            "  print(message)",
+            "  code_pipeline.put_job_failure_result(jobId=job, failureDetails={'message': message, 'type': 'JobFailed'})",
+            
             "def handler(event, context):",
             "  print event",
             
@@ -34,8 +46,26 @@
             "  user_parameters = job_data['actionConfiguration']['configuration']['UserParameters']",
             
             "  params = parse_user_params(user_parameters)",
-            "  print params"
+            "  ecs_cluster_name = params['ECSClusterName']",
+            "  ecs_taskdef_name = params['ECSTaskDefinition']",
             
+            "  ecs_client = boto3.client('ecs')",
+            
+            "  try:",
+            "    response = ecs_client.run_task(",
+            "                                 cluster=ecs_cluster_name, ",
+            "                                 taskDefinition=ecs_taskdef_name)",
+            
+            "    print response",
+            
+            "    print params",
+            
+            "    put_job_success(job_id)",
+            
+            "  except Exception as e:",
+            "    print e",
+            "    put_job_failure(job_id, 'Function exception: ' + str(e))"
+                        
           ]]}
         }
       }
@@ -63,11 +93,26 @@
             "Version" : "2012-10-17",
             "Statement": [
                 {
-                    "Action": [
-                        "logs:*"
-                    ],
-                    "Resource": "arn:aws:logs:*:*:*",
-                    "Effect": "Allow"
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Resource": "arn:aws:logs:*:*:*",
+                  "Effect": "Allow"
+                },
+                {
+                  "Action" : [
+                    "codepipeline:PutJobSuccessResult",
+                    "codepipeline:PutJobFailureResult"
+                  ],
+                  "Effect" : "Allow",
+                  "Resource" : "*"
+                },
+                {
+                  "Action": [
+                    "ecs:RunTask"
+                  ],
+                  "Resource" : "*",
+                  "Effect" : "Allow"
                 }
             ]
           }

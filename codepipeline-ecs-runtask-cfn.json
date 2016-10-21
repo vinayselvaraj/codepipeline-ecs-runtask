@@ -30,7 +30,6 @@
             
             "def put_job_success(job):",
             "  print('Putting job failure')",
-            "  print(message)",
             "  code_pipeline.put_job_success_result(jobId=job)",
             
             "def put_job_failure(job, message):",
